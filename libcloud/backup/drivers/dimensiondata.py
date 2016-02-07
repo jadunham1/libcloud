@@ -528,7 +528,7 @@ class DimensionDataBackupDriver(BackupDriver):
         clients = self._to_clients(object)
         return DimensionDataBackupDetails(
             asset_id=object.get('asset_id'),
-            service_plan=object.get('servicePlan').text,
+            service_plan=object.get('servicePlan'),
             state=object.get('state'),
             clients=clients
         )
