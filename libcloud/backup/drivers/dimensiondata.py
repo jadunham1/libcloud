@@ -435,8 +435,14 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``list`` of :class:`DimensionDataBackupClientType`
         """
+
+
+        if isinstance(target, BackupTarget):
+            server_id = target.address
+        else:
+            server_id = target
         response = self.connection.request_with_orgId_api_1(
-            'server/%s/backup' % (target.address),
+            'server/%s/backup' % (server_id),
             method='GET').object
         return self._to_backup_details(response)
 
