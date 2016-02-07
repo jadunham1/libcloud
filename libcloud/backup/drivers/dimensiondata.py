@@ -37,6 +37,7 @@ class DimensionDataBackupClientType(object):
         self.is_file_system = is_file_system
         self.description = description
 
+
 class DimensionDataBackupDetails(object):
     def __init__(self, asset_id, service_plan, state, clients=[]):
         self.asset_id = asset_id,
@@ -44,9 +45,12 @@ class DimensionDataBackupDetails(object):
         self.state = state
         self.clients = clients
 
+
 class DimensionDataBackupClient(object):
-    def __init__(self, type, is_file_system, status, description, schedule_pol, storage_pol,
-                 trigger=None, email=None, last_backup_time=None, next_backup=None, download_url=None, total_backup_size=None, running_job=None):
+    def __init__(self, type, is_file_system, status, description,
+                 schedule_pol, storage_pol, trigger=None, email=None,
+                 last_backup_time=None, next_backup=None, download_url=None,
+                 total_backup_size=None, running_job=None):
         self.type = type
         self.is_file_system = is_file_system
         self.status = status
@@ -61,11 +65,13 @@ class DimensionDataBackupClient(object):
         self.download_url = download_url
         self.running_job = running_job
 
+
 class DimensionDataBackupRunningJob(object):
     def __init__(self, id, status, percentage=0):
         self.id = id
         self.percentage = percentage
         self.status = status
+
 
 class DimensionDataBackupStoragePolicy(object):
     def __init__(self, name, retention_period, secondary_location):
@@ -413,12 +419,13 @@ class DimensionDataBackupDriver(BackupDriver):
         raise NotImplementedError(
             'cancel_target_job not implemented for this driver')
 
-    def ex_add_client_to_target(self, target, client, storage_pol, schedule_pol, trigger='ON_FAILURE', email='nobody@examle.com'):
+    def ex_add_client_to_target(self, target, client, storage_pol,
+                                schedule_pol, trigger, email):
         """
         :rtype: Instance of :class:`BackupTarget`
         """
         backup_elm = ET.Element('NewBackupClient',
-                             {'xmlns': BACKUP_NS})
+                                {'xmlns': BACKUP_NS})
         ET.SubElement(backup_elm, "type").text = client
         ET.SubElement(backup_elm, "storagePolicyName").text = storage_pol
         ET.SubElement(backup_elm, "schedulePolicyName").text = schedule_pol
@@ -441,7 +448,6 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :rtype: ``list`` of :class:`DimensionDataBackupClientType`
         """
-
 
         if isinstance(target, BackupTarget):
             server_id = target.address
@@ -528,7 +534,6 @@ class DimensionDataBackupDriver(BackupDriver):
             description=element.get('description'),
             is_file_system=bool(element.get('isFileSystem') == 'true')
         )
-    #def __init__(self, asset_id, service_plan, state, clients=[]):
 
     def _to_backup_details(self, object):
         clients = self._to_clients(object)
@@ -545,7 +550,7 @@ class DimensionDataBackupDriver(BackupDriver):
         return [self._to_client(el) for el in elements]
 
     def _to_client(self, element):
-        job=element.find(fixxpath('runningJob', BACKUP_NS))
+        job = element.find(fixxpath('runningJob', BACKUP_NS))
         running_job = None
         if job is not None:
             running_job = DimensionDataBackupRunningJob(
@@ -553,6 +558,7 @@ class DimensionDataBackupDriver(BackupDriver):
                 status=job.get('status'),
                 percentage=job.get('percentageComplete')
             )
+
         return DimensionDataBackupClient(
             type=element.get('type'),
             is_file_system=bool(element.get('isFileSystem') == 'true'),
