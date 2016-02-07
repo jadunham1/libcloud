@@ -413,7 +413,7 @@ class DimensionDataBackupDriver(BackupDriver):
         raise NotImplementedError(
             'cancel_target_job not implemented for this driver')
 
-    def ex_add_client_to_target(self, target, client, storage_pol, schedule_pol, trigger='FAILURE', email='nobody@examle.com'):
+    def ex_add_client_to_target(self, target, client, storage_pol, schedule_pol, trigger='ON_FAILURE', email='nobody@examle.com'):
         """
         :rtype: Instance of :class:`BackupTarget`
         """
