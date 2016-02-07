@@ -46,7 +46,7 @@ class DimensionDataBackupDetails(object):
 
 class DimensionDataBackupClient(object):
     def __init__(self, type, is_file_system, status, description, schedule_pol, storage_pol,
-                 trigger=None, email=None, last_backup_time=None, next_backup=None, download_url=None, total_backup_size=None):
+                 trigger=None, email=None, last_backup_time=None, next_backup=None, download_url=None, total_backup_size=None, running_job=None):
         self.type = type
         self.is_file_system = is_file_system
         self.status = status
@@ -59,7 +59,13 @@ class DimensionDataBackupClient(object):
         self.next_backup = next_backup
         self.total_backup_size = total_backup_size
         self.download_url = download_url
+        self.running_job = running_job
 
+class DimensionDataBackupRunningJob(object):
+    def __init__(self, id, status, percentage=0):
+        self.id = id
+        self.percentage = percentage
+        self.status = status
 
 class DimensionDataBackupStoragePolicy(object):
     def __init__(self, name, retention_period, secondary_location):
@@ -539,6 +545,14 @@ class DimensionDataBackupDriver(BackupDriver):
         return [self._to_client(el) for el in elements]
 
     def _to_client(self, element):
+        job=element.find(fixxpath('runningJob', BACKUP_NS))
+        running_job = None
+        if job is not None:
+            running_job = DimensionDataBackupRunningJob(
+                id=job.get('id'),
+                status=job.get('status'),
+                percentage=job.get('percentageComplete')
+            )
         return DimensionDataBackupClient(
             type=element.get('type'),
             is_file_system=bool(element.get('isFileSystem') == 'true'),
@@ -546,7 +560,8 @@ class DimensionDataBackupDriver(BackupDriver):
             description=findtext(element, 'description', BACKUP_NS),
             schedule_pol=findtext(element, 'schedulePolicyName', BACKUP_NS),
             storage_pol=findtext(element, 'storagePolicyName', BACKUP_NS),
-            download_url=findtext(element, 'downloadUrl', BACKUP_NS)
+            download_url=findtext(element, 'downloadUrl', BACKUP_NS),
+            running_job=running_job
         )
 
     def _to_targets(self, object):
