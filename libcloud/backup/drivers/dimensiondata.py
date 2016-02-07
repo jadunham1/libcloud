@@ -37,6 +37,29 @@ class DimensionDataBackupClientType(object):
         self.is_file_system = is_file_system
         self.description = description
 
+class DimensionDataBackupDetails(object):
+    def __init__(self, asset_id, service_plan, state, clients=[]):
+        self.asset_id = asset_id,
+        self.service_plan = service_plan,
+        self.state = state
+        self.clients = clients
+
+class DimensionDataBackupClient(object):
+    def __init__(self, type, is_file_system, status, description, schedule_pol, storage_pol,
+                 trigger=None, email=None, last_backup_time=None, next_backup=None, download_url=None, total_backup_size=None):
+        self.type = type
+        self.is_file_system = is_file_system
+        self.status = status
+        self.description = description
+        self.schedule_policy = schedule_pol
+        self.storage_policy = storage_pol
+        self.trigger = trigger
+        self.email = email
+        self.last_backup_time = last_backup_time
+        self.next_backup = next_backup
+        self.total_backup_size = total_backup_size
+        self.download_url = download_url
+
 
 class DimensionDataBackupStoragePolicy(object):
     def __init__(self, name, retention_period, secondary_location):
@@ -403,6 +426,19 @@ class DimensionDataBackupDriver(BackupDriver):
             data=ET.tostring(backup_elm)).object
         return "Success"
 
+    def ex_get_backup_details_for_target(self, target):
+        """
+        Returns a list of available backup client types
+
+        :param  target: The backup target to list available types for
+        :type   target: :class:`BackupTarget`
+
+        :rtype: ``list`` of :class:`DimensionDataBackupClientType`
+        """
+        response = self.connection.request_with_orgId_api_1(
+            'server/%s/backup' % (target.address),
+            method='GET').object
+        return self._to_backup_details(response)
 
     def ex_list_available_client_types(self, target):
         """
@@ -479,6 +515,32 @@ class DimensionDataBackupDriver(BackupDriver):
             type=element.get('type'),
             description=element.get('description'),
             is_file_system=bool(element.get('isFileSystem') == 'true')
+        )
+    #def __init__(self, asset_id, service_plan, state, clients=[]):
+
+    def _to_backup_details(self, object):
+        clients = self._to_clients(object)
+        return DimensionDataBackupDetails(
+            asset_id=object.get('asset_id'),
+            service_plan=object.get('servicePlan'),
+            state=object.get('state'),
+            clients=clients
+        )
+
+    def _to_clients(self, object):
+        elements = object.findall(fixxpath('backupClient', BACKUP_NS))
+
+        return [self._to_client(el) for el in elements]
+
+    def _to_client(self, element):
+        return DimensionDataBackupClient(
+            type=element.get('type'),
+            is_file_system=bool(element.get('isFileSystem') == 'true'),
+            status=element.get('status'),
+            description=findtext(element, 'description', BACKUP_NS),
+            schedule_pol=findtext(element, 'schedulePolicyName', BACKUP_NS),
+            storage_pol=findtext(element, 'storagePolicyName', BACKUP_NS),
+            download_url=findtext(element, 'downloadUrl', BACKUP_NS)
         )
 
     def _to_targets(self, object):
