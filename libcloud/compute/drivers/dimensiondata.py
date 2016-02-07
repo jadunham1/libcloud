@@ -247,9 +247,11 @@ class DimensionDataNodeDriver(NodeDriver):
         response_code = findtext(body, 'responseCode', TYPES_URN)
         return response_code in ['IN_PROGRESS', 'OK']
 
-    def list_nodes(self, ex_location=None, ex_name=None, ex_ipv6=None, ex_ipv4=None,
-                   ex_vlan=None, ex_image=None, ex_deployed=None, ex_started=None,
-                   ex_state=None, ex_network=None, ex_network_domain=None):
+    def list_nodes(self, ex_location=None, ex_name=None,
+                   ex_ipv6=None, ex_ipv4=None, ex_vlan=None,
+                   ex_image=None, ex_deployed=None,
+                   ex_started=None, ex_state=None,
+                   ex_network=None, ex_network_domain=None):
         """
         List nodes deployed for your organization.
 
@@ -261,14 +263,14 @@ class DimensionDataNodeDriver(NodeDriver):
         """
 
         node_list = []
-        for nodes in self.ex_list_nodes_paginated(location=ex_location,
-                                                  name=ex_name,
-                                                  ipv6=ex_ipv6, ipv4=ex_ipv4,
-                                                  vlan=ex_vlan, image=ex_image,
-                                                  deployed=ex_deployed, started=ex_started,
-                                                  state=ex_state, network=ex_network,
-                                                  network_domain=ex_network_domain
-                                                 ):
+        for nodes in self.ex_list_nodes_paginated(
+                location=ex_location,
+                name=ex_name, ipv6=ex_ipv6,
+                ipv4=ex_ipv4, vlan=ex_vlan,
+                image=ex_image, deployed=ex_deployed,
+                started=ex_started, state=ex_state,
+                network=ex_network,
+                network_domain=ex_network_domain):
             node_list.extend(nodes)
 
         return node_list
@@ -341,10 +343,10 @@ class DimensionDataNodeDriver(NodeDriver):
             .request_with_orgId_api_1('networkWithLocation%s' % url_ext)
             .object)
 
-    def ex_list_nodes_paginated(self, name=None, location=None, ipv6=None, ipv4=None,
-                                vlan=None, image=None, deployed=None,
-                                started=None, state=None, network=None,
-                                network_domain=None):
+    def ex_list_nodes_paginated(self, name=None, location=None,
+                                ipv6=None, ipv4=None, vlan=None,
+                                image=None, deployed=None, started=None,
+                                state=None, network=None, network_domain=None):
         """
         Return a generator which yields node lists in pages
 
@@ -364,19 +366,14 @@ class DimensionDataNodeDriver(NodeDriver):
 
         if ipv6 is not None:
             params['ipv6'] = ipv6
-
         if ipv4 is not None:
             params['privateIpv4'] = ipv4
-
         if state is not None:
             params['state'] = state
-
         if started is not None:
             params['started'] = state
-
         if deployed is not None:
             params['deployed'] = deployed
-
         if name is not None:
             params['name'] = name
 
@@ -392,10 +389,9 @@ class DimensionDataNodeDriver(NodeDriver):
             else:
                 params['networkId'] = network
 
-
         if vlan is not None:
             if isinstance(vlan, DimensionDataVlan):
-                params['vlanId'] = vlans.id
+                params['vlanId'] = vlan.id
             else:
                 params['vlanId'] = vlan
 
@@ -405,9 +401,9 @@ class DimensionDataNodeDriver(NodeDriver):
             else:
                 params['sourceImageId'] = image
 
-
         nodes_obj = self._list_nodes_single_page(params)
         yield self._to_nodes(nodes_obj)
+
         while nodes_obj.get('pageCount') >= nodes_obj.get('pageSize'):
             params['pageNumber'] = int(nodes_obj.get('pageNumber')) + 1
             nodes_obj = self._list_nodes_single_page(params)
