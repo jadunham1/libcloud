@@ -267,6 +267,8 @@ class DimensionDataBackupDriver(BackupDriver):
 
         :param target: Backup target to delete
         :type  target: Instance of :class:`BackupTarget`
+
+        :rtype: ``bool``
         """
         response = self.connection.request_with_orgId_api_1(
             'server/%s/backup?disable' % (target.address),
@@ -422,8 +424,34 @@ class DimensionDataBackupDriver(BackupDriver):
     def ex_add_client_to_target(self, target, client, storage_policy,
                                 schedule_policy, trigger, email):
         """
-        :rtype: Instance of :class:`BackupTarget`
+        Add a client to a target
+
+        :param target: Backup target with the backup data
+        :type  target: Instance of :class:`BackupTarget` or ``str``
+
+        :param client: Client to add to the target
+        :type  client: ``str``
+
+        :param storage_policy: The storage policy for the client
+        :type  storage_policy: ``str``
+
+        :param schedule_policy: The storage policy for the client
+        :type  schedule_policy: ``str``
+
+        :param trigger: The notify trigger for the client
+        :type  trigger: ``str``
+
+        :param email: The notify email for the client
+        :type  email: ``str``
+
+        :rtype: ``bool``
         """
+
+        if isinstance(target, BackupTarget):
+            server_id = target.address
+        else:
+            server_id = target
+
         backup_elm = ET.Element('NewBackupClient',
                                 {'xmlns': BACKUP_NS})
         ET.SubElement(backup_elm, "type").text = client
@@ -434,9 +462,9 @@ class DimensionDataBackupDriver(BackupDriver):
         ET.SubElement(alerting_elm, "emailAddress").text = email
 
         response = self.connection.request_with_orgId_api_1(
-                       'server/%s/backup/client' % (target.address),
-                       method='POST',
-                       data=ET.tostring(backup_elm)).object
+            'server/%s/backup/client' % (server_id),
+            method='POST',
+            data=ET.tostring(backup_elm)).object
 
         response_code = findtext(response, 'result', GENERAL_NS)
         return response_code in ['IN_PROGRESS', 'SUCCESS']
@@ -446,9 +474,9 @@ class DimensionDataBackupDriver(BackupDriver):
         Returns a list of available backup client types
 
         :param  target: The backup target to list available types for
-        :type   target: :class:`BackupTarget`
+        :type   target: :class:`BackupTarget` or ``str``
 
-        :rtype: ``list`` of :class:`DimensionDataBackupClientType`
+        :rtype: ``list`` of :class:`DimensionDataBackupDetails`
         """
 
         if isinstance(target, BackupTarget):
