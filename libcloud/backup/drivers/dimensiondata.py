@@ -40,8 +40,8 @@ class DimensionDataBackupClientType(object):
 
 class DimensionDataBackupDetails(object):
     def __init__(self, asset_id, service_plan, state, clients=[]):
-        self.asset_id = asset_id,
-        self.service_plan = service_plan,
+        self.asset_id = asset_id
+        self.service_plan = service_plan
         self.state = state
         self.clients = clients
 
@@ -419,25 +419,27 @@ class DimensionDataBackupDriver(BackupDriver):
         raise NotImplementedError(
             'cancel_target_job not implemented for this driver')
 
-    def ex_add_client_to_target(self, target, client, storage_pol,
-                                schedule_pol, trigger, email):
+    def ex_add_client_to_target(self, target, client, storage_policy,
+                                schedule_policy, trigger, email):
         """
         :rtype: Instance of :class:`BackupTarget`
         """
         backup_elm = ET.Element('NewBackupClient',
                                 {'xmlns': BACKUP_NS})
         ET.SubElement(backup_elm, "type").text = client
-        ET.SubElement(backup_elm, "storagePolicyName").text = storage_pol
-        ET.SubElement(backup_elm, "schedulePolicyName").text = schedule_pol
+        ET.SubElement(backup_elm, "storagePolicyName").text = storage_policy
+        ET.SubElement(backup_elm, "schedulePolicyName").text = schedule_policy
         alerting_elm = ET.SubElement(backup_elm, "alerting")
         ET.SubElement(alerting_elm, "trigger").text = trigger
         ET.SubElement(alerting_elm, "emailAddress").text = email
 
-        self.connection.request_with_orgId_api_1(
-            'server/%s/backup/client' % (target.address),
-            method='POST',
-            data=ET.tostring(backup_elm)).object
-        return "Success"
+        response = self.connection.request_with_orgId_api_1(
+                       'server/%s/backup/client' % (target.address),
+                       method='POST',
+                       data=ET.tostring(backup_elm)).object
+
+        response_code = findtext(response, 'result', GENERAL_NS)
+        return response_code in ['IN_PROGRESS', 'SUCCESS']
 
     def ex_get_backup_details_for_target(self, target):
         """
@@ -536,12 +538,11 @@ class DimensionDataBackupDriver(BackupDriver):
         )
 
     def _to_backup_details(self, object):
-        clients = self._to_clients(object)
         return DimensionDataBackupDetails(
             asset_id=object.get('asset_id'),
             service_plan=object.get('servicePlan'),
             state=object.get('state'),
-            clients=clients
+            clients=self._to_clients(object)
         )
 
     def _to_clients(self, object):
@@ -556,7 +557,7 @@ class DimensionDataBackupDriver(BackupDriver):
             running_job = DimensionDataBackupRunningJob(
                 id=job.get('id'),
                 status=job.get('status'),
-                percentage=job.get('percentageComplete')
+                percentage=int(job.get('percentageComplete'))
             )
 
         return DimensionDataBackupClient(
