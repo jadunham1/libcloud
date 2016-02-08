@@ -256,7 +256,38 @@ class DimensionDataNodeDriver(NodeDriver):
         List nodes deployed for your organization.
 
         :keyword ex_location: The location filter
-        :type    location: :class:`NodeLocation` or ``str``
+        :type    ex_location: :class:`NodeLocation` or ``str``
+
+        :keyword ex_name: The name filter
+        :type    ex_name ``str``
+
+        :keyword ex_ipv6: The ipv6 filter
+        :type    ex_ipv6: ``str``
+
+        :keyword ex_ipv4: The ipv4 filter
+        :type    ex_ipv4: ``str``
+
+        :keyword ex_vlan: The vlan filter
+        :type    ex_vlan: :class:`DimensionDataVlan` or ``str``
+
+        :keyword ex_image: The image filter
+        :type    ex_image: :class:`NodeImage` or ``str``
+
+        :keyword ex_deployed: The deployed filter
+        :type    ex_deployed: ``bool``
+
+        :keyword ex_started: The started filter
+        :type    ex_started: ``bool``
+
+        :keyword ex_state: The state filter
+        :type    ex_state: ``str``
+
+        :keyword ex_network: The network filter
+        :type    ex_notwork: :class:`DimensionDataNetwork` or ``str``
+
+        :keyword ex_network_domain: The network domain filter
+        :type    ex_notwork_domain: :class:`DimensionDataNetworkDomain`
+                                    or ``str``
 
         :return: a list of `Node` objects
         :rtype: ``list`` of :class:`Node`
@@ -350,8 +381,38 @@ class DimensionDataNodeDriver(NodeDriver):
         """
         Return a generator which yields node lists in pages
 
-        :keyword ex_location: The location filter
+        :keyword location: The location filter
         :type    location: :class:`NodeLocation` or ``str``
+
+        :keyword name: The name filter
+        :type    name ``str``
+
+        :keyword ipv6: The ipv6 filter
+        :type    ipv6: ``str``
+
+        :keyword ipv4: The ipv4 filter
+        :type    ipv4: ``str``
+
+        :keyword vlan: The vlan filter
+        :type    vlan: :class:`DimensionDataVlan` or ``str``
+
+        :keyword image: The image filter
+        :type    image: :class:`NodeImage` or ``str``
+
+        :keyword deployed: The deployed filter
+        :type    deployed: ``bool``
+
+        :keyword started: The started filter
+        :type    started: ``bool``
+
+        :keyword state: The state filter
+        :type    state: ``str``
+
+        :keyword network: The network filter
+        :type    notwork: :class:`DimensionDataNetwork` or ``str``
+
+        :keyword network_domain: The network domain filter
+        :type    notwork_domain: :class:`DimensionDataNetworkDomain` or ``str``
 
         :return: a list of `Node` objects
         :rtype: ``generator`` of `list` of :class:`Node`
@@ -371,7 +432,7 @@ class DimensionDataNodeDriver(NodeDriver):
         if state is not None:
             params['state'] = state
         if started is not None:
-            params['started'] = state
+            params['started'] = started
         if deployed is not None:
             params['deployed'] = deployed
         if name is not None:
